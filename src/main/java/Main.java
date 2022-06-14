@@ -29,11 +29,12 @@ public class Main {
                     .build())
             .build();
 
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) throws IOException {
         task1();
         task2Version1();
         task2Version2();
     }
+
 
     public static void task1() throws IOException {
         final String url = "https://raw.githubusercontent.com/netology-code/jd-homeworks/master/http/task1/cats";
@@ -41,9 +42,10 @@ public class Main {
         CloseableHttpResponse response = httpClient.execute(request);
         ObjectMapper mapper = new ObjectMapper();
         List<CatsInfo> catsInfoList = mapper.readValue(
-                response.getEntity().getContent(), new TypeReference<List<CatsInfo>>() {
+                response.getEntity().getContent(), new TypeReference<>() {
                 });
-        catsInfoList.stream().filter(value -> value.getUpvotes() != null && Integer.parseInt(value.getUpvotes()) > 0)
+        catsInfoList.stream().
+                filter(value -> value.getUpVotes() != null && Integer.parseInt(value.getUpVotes()) > 0)
                 .forEach(value -> System.out.println(value.getText()));
     }
 
@@ -53,12 +55,10 @@ public class Main {
 
         ObjectMapper mapper = new ObjectMapper();
         NasaResponse nasaResponse = mapper.readValue(responseFromNasa.getEntity().getContent(), new TypeReference<>() {});
+        URL nasaImageUrl = new URL(nasaResponse.getUrl());
 
-        HttpGet requestNasaImage = new HttpGet(nasaResponse.getUrl());
-        responseFromNasa = httpClient.execute(requestNasaImage);
-        Files.copy(responseFromNasa.getEntity().getContent(),
-                Path.of( FilenameUtils.getName(
-                        new URL(nasaResponse.getUrl()).getPath())),
+        Files.copy(nasaImageUrl.openStream(),
+                Path.of( FilenameUtils.getName(nasaImageUrl.getPath())),
                 REPLACE_EXISTING);
     }
     public static void task2Version2() throws IOException {
@@ -66,13 +66,10 @@ public class Main {
         CloseableHttpResponse responseFromNasa = httpClient.execute(requestToNasa);
 
         JSONObject jsonEntity = new JSONObject(EntityUtils.toString(responseFromNasa.getEntity()));
-
         URL nasaImageUrl = new URL(jsonEntity.get("hdurl").toString());
-        HttpGet requestNasaImage = new HttpGet(nasaImageUrl.toString());
-        responseFromNasa = httpClient.execute(requestNasaImage);
 
-        Files.copy(responseFromNasa.getEntity().getContent(),
-                Path.of(FilenameUtils.getName(nasaImageUrl.getPath())),
+        Files.copy(nasaImageUrl.openStream(),
+                Path.of( FilenameUtils.getName(nasaImageUrl.getFile())),
                 REPLACE_EXISTING);
     }
 }
